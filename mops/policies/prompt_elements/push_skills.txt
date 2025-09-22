@@ -1,0 +1,8 @@
+Action("pick", [frame_name])
+Grab the frame with name frame_name.
+
+Action("place", [x, y, z, rot_x, rot_y, rot_z])
+Place grasped object at pose x, y, z, rot_x, rot_y, rot_z. If any of the rotations is set to None, it will not constrain the object to have a specific rotation in that axis.
+
+Action("push_motion", [start_x, start_y, end_x, end_y])
+Perform a push motion along the straight 2D path defined by the start and end points.

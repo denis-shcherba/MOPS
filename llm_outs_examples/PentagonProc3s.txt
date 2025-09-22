@@ -1,0 +1,37 @@
+```python
+def gen_plan(state: DrawState, x: float, y:float, size: float, offsets: list):
+    import math
+
+
+    num_sides = 5
+    angle = 2 * math.pi / num_sides
+
+    # Calculate the vertices of the pentagon
+    base_vertices = [
+        [x + size * math.cos(i * angle), y + size * math.sin(i * angle)]
+        for i in range(num_sides)
+    ]
+
+    # Add offsets to each vertex
+    perturbed = [
+        [px + dx, py + dy]
+        for (px, py), (dx, dy) in zip(base_vertices, offsets)
+    ]
+
+    # Create draw_line actions
+    actions = []
+    for i in range(num_sides):
+        x0, y0 = perturbed[i]
+        x1, y1 = perturbed[(i + 1) % num_sides]  # Wrap around to close the pentagon
+        actions.append(Action("draw_line", [x0, y0, x1, y1]))
+
+    return actions
+
+def gen_domain(initial: DrawState):
+    return {
+        "x": ContinuousSampler(0.0, 0.64),  # X coordinate of the center of the pentagon (cm)
+        "y": ContinuousSampler(0.0, 0.48),  # Y coordinate of the center of the pentagon (cm)
+        "size": ContinuousSampler(0.05, 0.2),       # Size of the pentagon (cm)
+        "offsets": ContinuousSampler(-0.1, 0.1, shape=(5, 2))  # 2D point offsets for the pentagon (5 points)
+    }
+```

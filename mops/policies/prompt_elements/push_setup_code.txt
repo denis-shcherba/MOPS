@@ -1,0 +1,26 @@
+TABLE_BOUNDS = [[-0.5, 0.5], [-0.5, 0.5], [0, 0]]  # X Y Z
+TABLE_CENTER = [0, 0, 0]
+
+@dataclass
+class Frame:
+    name: str
+    x_pos: float
+    y_pos: float
+    z_pos: float
+    x_rot: float
+    y_rot: float
+    z_rot: float
+    size: float | list[float]
+    color: list[float]
+
+
+@dataclass
+class PushState(State):
+    frames: List[Frame] = field(default_factory=list)
+
+    def getFrame(self, name: str) -> Frame:
+        for f in self.frames:
+            if f.name == name:
+                return f
+        return None
+        

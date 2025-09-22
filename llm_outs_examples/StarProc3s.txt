@@ -1,0 +1,46 @@
+```python
+def gen_plan(state: DrawState, pos_x: float, pos_y: float, size: float, offsets: list):
+    import math
+
+    # Center position for the star
+    x_center = pos_x
+    y_center = pos_y
+
+    # Calculate the points of the star
+    points = []
+    for i in range(5):
+        # Outer points
+        outer_angle = i * (2 * math.pi / 5) - math.pi / 2
+        outer_x = x_center + size * math.cos(outer_angle)
+        outer_y = y_center + size * math.sin(outer_angle)
+        points.append((outer_x, outer_y))
+
+        # Inner points
+        inner_angle = outer_angle + (math.pi / 5)
+        inner_x = x_center + (size / 2) * math.cos(inner_angle)
+        inner_y = y_center + (size / 2) * math.sin(inner_angle)
+        points.append((inner_x, inner_y))
+
+    # Add offsets to each point
+    perturbed_points = [
+        (px + dx, py + dy)
+        for (px, py), (dx, dy) in zip(points, offsets)
+    ]
+
+    # Create draw_line actions
+    actions = []
+    for i in range(len(perturbed_points)):
+        x0, y0 = perturbed_points[i]
+        x1, y1 = perturbed_points[(i + 1) % len(perturbed_points)]  # Wrap around to close the star
+        actions.append(Action("draw_line", [x0, y0, x1, y1]))
+
+    return actions
+
+def gen_domain(initial: DrawState):
+    return {
+        "pos_x": ContinuousSampler(0.1, 0.54),  # X coordinate of the center of the star (cm)
+        "pos_y": ContinuousSampler(0.1, 0.48),  # Y coordinate of the center of the star (cm)
+        "size": ContinuousSampler(0.1, 0.2),        # Size of the star (cm)
+        "offsets": ContinuousSampler(-0.05, 0.05, shape=(10, 2))  # 2D point offsets for the star (10 points)
+    }
+```

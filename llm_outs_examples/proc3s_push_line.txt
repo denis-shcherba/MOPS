@@ -1,0 +1,59 @@
+```python
+def gen_plan(state: PushState, line_angle: float, push_offsets: list):
+    import numpy as np
+
+    actions = []
+    block_names = [f.name for f in state.frames if f.name.startswith("block")]
+    block_centers = np.array([[state.getFrame(name).x_pos, state.getFrame(name).y_pos] for name in block_names])
+
+    # Define unit direction vector for the desired line
+    direction = np.array([np.cos(line_angle), np.sin(line_angle)])
+
+    # Project each block center onto the direction vector to determine order
+    projections = block_centers @ direction
+    sorted_indices = np.argsort(projections)
+    sorted_blocks = [block_names[i] for i in sorted_indices]
+
+    # Determine spacing: use average block size plus some gap
+    block_size = state.getFrame(sorted_blocks[0]).size[0]  # Assuming square footprint
+    spacing = block_size + 0.01
+
+    # Start from average position as center
+    center = np.mean(block_centers, axis=0)
+    num_blocks = len(sorted_blocks)
+
+    for i, block_name in enumerate(sorted_blocks):
+        offset = (i - (num_blocks - 1) / 2.0) * spacing
+        target_pos = center + direction * offset
+
+        # Push vector from current to target
+        current_pos = np.array([state.getFrame(block_name).x_pos, state.getFrame(block_name).y_pos])
+        push_dir = target_pos - current_pos
+        push_dir_mag = np.linalg.norm(push_dir)
+        if push_dir_mag != 0:
+            push_dir /= push_dir_mag
+        else:
+            push_dir = np.zeros(2)
+
+        # Define start and end points for push using provided offset
+        offset_vals = push_offsets[i]
+        start = current_pos - push_dir * block_size * 2 + offset_vals[:2]
+        end = target_pos + offset_vals[2:]
+
+        actions.append(Action("push_motion", [start[0], start[1], end[0], end[1]]))
+
+    return actions
+
+
+def gen_domain(initial: PushState):
+    block_names = [f.name for f in initial.frames if f.name.startswith("block")]
+    num_blocks = len(block_names)
+    
+    # Generate distinct offset guesses for each block
+    push_offsets = ContinuousSampler(-.4, .4, shape=(num_blocks, 4))
+
+    return {
+        "line_angle": ContinuousSampler(0, 6.28),  # Aligned with x-axis initially
+        "push_offsets": push_offsets,
+    }
+```

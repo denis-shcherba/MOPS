@@ -1,0 +1,38 @@
+```python
+def gen_plan(state: PushState):
+    
+    def calculate_centroid(blocks):
+        """Calculate the centroid of the blocks."""
+        x_coords = [block.x_pos for block in blocks]
+        y_coords = [block.y_pos for block in blocks]
+        centroid_x = sum(x_coords) / len(blocks)
+        centroid_y = sum(y_coords) / len(blocks)
+        return centroid_x, centroid_y
+
+    def sort_blocks_by_distance_to_centroid(blocks, centroid):
+        """Sort blocks by their distance to the centroid."""
+        blocks.sort(key=lambda block: ((block.x_pos - centroid[0]) ** 2 + (block.y_pos - centroid[1]) ** 2) ** 0.5)
+        return blocks
+
+    def generate_line_actions(sorted_blocks, centroid):
+        """Generate actions to align blocks in a straight line."""
+        actions = []
+        # Determine the direction of the line
+        direction_vector = [1, 0]  # Assuming a horizontal line for simplicity
+        start_point = [centroid[0] - direction_vector[0] * len(sorted_blocks) * 0.08 / 2,
+                       centroid[1] - direction_vector[1] * len(sorted_blocks) * 0.08 / 2]
+        
+        for i, block in enumerate(sorted_blocks):
+            target_x = start_point[0] + i * 0.08 * direction_vector[0]
+            target_y = start_point[1] + i * 0.08 * direction_vector[1]
+            actions.append(Action("push_motion", [block.x_pos, block.y_pos, target_x, target_y]))
+        
+        return actions
+
+    blocks = state.frames[:-1]  # Exclude the last frame which is not a block
+    centroid = calculate_centroid(blocks)
+    sorted_blocks = sort_blocks_by_distance_to_centroid(blocks, centroid)
+    actions = generate_line_actions(sorted_blocks, centroid)
+    
+    return actions
+```

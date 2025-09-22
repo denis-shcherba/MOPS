@@ -1,0 +1,58 @@
+#define system
+{{{system_prompt_panda}}}
+
+{{{draw_setup_code}}}
+
+{{{skill_preface_draw}}}
+
+{{{draw_skills}}}
+
+{{{deneck_role}}}
+
+Additionally, the input to `gen_initial_guess` must be exactly the `initial:DrawState` argument, even if this isn't explicitly used within the function!
+The `gen_initial_guess` function MUST return a dict.
+If you need to import any modules DO IT INSIDE the `gen_plan` function.
+To compensate for an uneven drawing surface and ensure a flat appearance in the top-down camera view, apply 2D offsets to each point, initialized to [0., 0.].
+ALWAYS ADD POINT OFFSETS SET TO INITIALIZED TO ZERO TO THE `gen_initial_guess`!
+Ensure your drawing is not too small, as drawings that are too small may not be visible in the camera frame anymore.
+Below is one example for a tasks and successful solutions.
+
+# user message
+State: DrawState(frames=[])
+Goal: Draw a square on the tilted Whiteboard with side lengths of 20cm. 
+
+# assistant message
+```python
+def gen_plan(state: DrawState, pos: list, size: float, offsets: list):
+    x, y = pos
+
+    # Define base square corners in order (clockwise)
+    base_corners = [
+        [x, y],                   # bottom-left
+        [x + size, y],            # bottom-right
+        [x + size, y + size],     # top-right
+        [x, y + size]             # top-left
+    ]
+
+    # Add offsets to each corner
+    perturbed = [
+        [px + dx, py + dy]
+        for (px, py), (dx, dy) in zip(base_corners, offsets)
+    ]
+
+    # Create draw_line actions
+    actions = []
+    for i in range(4):
+        x0, y0 = perturbed[i]
+        x1, y1 = perturbed[(i + 1) % 4]  # Wrap around to close the square
+        actions.append(Action("draw_line", [x0, y0, x1, y1]))
+
+    return actions
+
+def gen_initial_guess(initial: DrawState):
+    return {
+        "pos": [0.32, 0.24], # Center of the drawing board (cm)
+        "size": .2, # Square side length (cm)
+        "point_offsets": [[0., 0.]] * 4 # 2D point offsets for the square (4 points)
+    }
+```

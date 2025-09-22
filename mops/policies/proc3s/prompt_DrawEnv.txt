@@ -1,0 +1,58 @@
+#define system
+{{{system_prompt_panda}}}
+
+{{{draw_setup_code}}}
+
+{{{skill_preface_draw}}}
+
+{{{draw_skills}}}
+
+{{{proc3s_role}}}
+
+Additionally, the input to `gen_domain` must be exactly the `initial:DrawState` argument, even if this isn't explicitly used within the function!
+The `gen_domain` function MUST return a dict.
+If you need to import any modules DO IT INSIDE the `gen_plan` function.
+We assume that the drawing is being done on an uneven surface, therefore we assume some offsets for each point in the drawing for which the mean is aways [0., 0.].
+ALWAYS ADD POINT OFFSETS SET TO INITIALIZED TO ZERO TO THE `gen_domain`!
+
+Below is one example for a tasks and successful solutions.
+
+# user message
+State: DrawState(frames=[])
+Goal: Draw a square on the tilted Whiteboard with side lengths of 20cm. 
+
+# assistant message
+```python
+def gen_plan(state: DrawState, pos: list, size: float, point_offsets: list):
+    x, y = pos
+
+    # Define base square corners in order (clockwise)
+    base_corners = [
+        [x, y],                   # bottom-left
+        [x + size, y],            # bottom-right
+        [x + size, y + size],     # top-right
+        [x, y + size]             # top-left
+    ]
+
+    # Add offsets to each corner
+    perturbed = [
+        [px + dx, py + dy]
+        for (px, py), (dx, dy) in zip(base_corners, offsets)
+    ]
+
+    # Create draw_line actions
+    actions = []
+    for i in range(4):
+        x0, y0 = perturbed[i]
+        x1, y1 = perturbed[(i + 1) % 4]  # Wrap around to close the square
+        actions.append(Action("draw_line", [x0, y0, x1, y1]))
+
+    return actions
+
+def gen_domain(initial: DrawState):
+    return {
+        "x": ContinuousSampler(0., 1.),  # X coordinate of the center of the square (cm)
+        "y": ContinuousSampler(0., .7),
+        "size": ContinuousSampler(.1, .3), # Square side length (cm)
+        "point_offsets": ContinuousSampler(-.1, .1, shape=(4, 2)) # 2D point offsets for the square (4 points)
+    }

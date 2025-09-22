@@ -1,0 +1,28 @@
+defaults:
+  - _self_
+name: mops_star_uneven
+render: true
+vis_debug: false
+seed: 5
+use_komo: false
+max_env_steps: 50
+queryLLM: True
+optimizer: cma
+cma_sigma: 0.01
+
+env:
+  _target_: mops.environments.draw.env.DrawEnv
+  stability_check: False
+  gui: true
+task:
+  _target_: mops.environments.draw.tasks.HashSymbol
+  goal_str: "Draw a straight, equilateral, grid-like version of a hash symbol # (like in Tic Tac Toe)."
+  task_name: HashSymbol
+policy:
+  _target_: mops.policies.mops.policy.MOPS
+  max_feedbacks: 2
+  max_evals: 10000
+  gaussian_blur: false
+  method: mops
+updater:
+  _target_: mops.environments.utils.DefaultUpdater

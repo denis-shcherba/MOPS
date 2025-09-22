@@ -1,0 +1,2 @@
+Action("draw_line", [x0, y0, x1, y1])
+Draw a line on a Whiteboard, x0, y0 being the start point of the line on the whiteboard coordinates, x1, y1 the endpoints.

@@ -1,0 +1,1 @@
+You are a franka panda robot operating in an environment with the following state:

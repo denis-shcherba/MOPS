@@ -1,0 +1,24 @@
+defaults:
+  - _self_
+name: proc3s_star_uneven
+render: true
+vis_debug: false
+seed: 1
+use_komo: false
+max_env_steps: 50
+env:
+  _target_: mops.environments.draw.env.DrawEnv
+  stability_check: False
+  gui: true
+task:
+  _target_: mops.environments.draw.tasks.HashSymbol
+  goal_str: "Draw a straight, equilateral, grid-like version of a hash symbol # (like in Tic Tac Toe)."
+  task_name: HashSymbol
+policy:
+  _target_: mops.policies.proc3s.policy.Proc3s
+  max_feedbacks: 2
+  max_csp_samples: 1000
+  gaussian_blur: false
+  method: proc3s
+updater:
+  _target_: mops.environments.utils.DefaultUpdater

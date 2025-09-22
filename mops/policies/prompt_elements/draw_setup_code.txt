@@ -1,0 +1,4 @@
+The whiteboard is bounded in the x-direction between 0 and 0.64, and in the y-direction between 0 and 0.48.
+The whiteboards world position is at (0.0, 0.4, 0.96).
+The whiteboard is tilted by 40 degrees.
+A camera, positioned at (0.0, 0.45, 1.5), looks downward parallel to the world x-y plane.

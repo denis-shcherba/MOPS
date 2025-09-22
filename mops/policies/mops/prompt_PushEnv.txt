@@ -1,0 +1,114 @@
+#define system
+{{{system_prompt_panda}}}
+
+{{{push_setup_code}}}
+
+{{{skill_preface_rai}}}
+
+{{{push_skills_sr}}}
+
+{{{mops_role}}}
+
+Additionally, the input to `gen_initial_guess` must be exactly the `initial:PushState` argument, even if this isn't explicitly used within the function!
+WHEN PERFORMING A PUSH, YOU NEED TO ALWAYS DEFINE SOME OFFSETS FOR THE START AND END POINTS OF SAID PUSH IN THE gen_initial_guess FUNCTION.
+IF THERE ARE MULTIPLE PUSHES, A UNIQUE OFFSET MUST BE PROVIDED FOR EACH ONE — I.E., gen_initial_guess MUST RETURN A LIST OF OFFSET SETS, ONE PER PUSH ACTION.
+Offsets should be of the form [start_x_offset, start_y_offset, end_x_offset, end_y_offset].
+
+
+#define user
+initial=PushState(frames=[Frame(name="block_red", x_pos=0.0, y_pos=0.0, z_pos=0.71, x_rot=-0.0, y_rot=0.0, z_rot=-0.0, size=[0.04, 0.04, 0.12, 0.0], color="[255, 0, 0]"), Frame(name="block_green", x_pos=0.15, y_pos=0.0, z_pos=0.71, x_rot=-0.0, y_rot=0.0, z_rot=-0.0, size=[0.04, 0.04, 0.12, 0.0], color="[0, 255, 0]"), Frame(name="block_blue", x_pos=0.3, y_pos=0.0, z_pos=0.71, x_rot=-0.0, y_rot=0.0, z_rot=-0.0, size=[0.04, 0.04, 0.12, 0.0], color="[0, 0, 255]"), Frame(name="l_gripper", x_pos=0.0, y_pos=0.28, z_pos=1.27, x_rot=0.5, y_rot=-0.0, z_rot=1.29, size=[0.03], color="[229, 229, 229]"), Frame(name="table", x_pos=0.0, y_pos=0.0, z_pos=0.6, x_rot=-0.0, y_rot=0.0, z_rot=-0.0, size=[1.0, 1.0, 0.1, 0.02], color="[76, 76, 76]")])
+Goal: Build a bridge. A bridge is defined as two vertical blocks next to each other and one horizontal block on top of them.
+
+
+#define assistant
+```python
+def gen_plan(state: PushState, center: list, yaw: float, slack: float):
+    
+    import numpy as np
+    
+    # Build the bridge
+    actions = []
+
+    block_size_z = state.getFrame("block_red").size[2]
+    
+    # Red #
+    pos_x = np.cos(yaw) * block_size_z * .5 + center[0]
+    pos_y = -np.sin(yaw) * block_size_z * .5 + center[1]
+    actions.append(Action("pick", ["block_red", None]))
+    actions.append(Action("place_sr", [pos_x, pos_y, None, None, None]))
+
+    # Green #
+    pos_x = -np.cos(yaw) * block_size_z * .5 + center[0]
+    pos_y = np.sin(yaw) * block_size_z * .5 + center[1]
+    actions.append(Action("pick", ["block_green", None]))
+    actions.append(Action("place_sr", [pos_x, pos_y, None, None, None]))
+
+    # Blue #
+    pos_z = block_size_z + slack
+    actions.append(Action("pick", ["block_blue", None]))
+    actions.append(Action("place_sr", [center[0], center[1], pos_z, True, yaw]))
+    
+    return actions
+
+def gen_initial_guess(initial:PushState):
+    guess = {
+        "center": [.2, .2], # BBO initial value
+        "yaw": .0,
+        "slack": .03,
+    }
+    return guess
+```
+
+
+#define user
+initial=PushState(frames=[Frame(name="big_red_block", x_pos=-0.2, y_pos=0.3, z_pos=0.7, x_rot=-0.0, y_rot=-0.0, z_rot=1.57, size=[0.1, 0.2, 0.1, 0.0], color="[204, 51, 63]"), Frame(name="target_pose", x_pos=0.4, y_pos=0.3, z_pos=0.7, x_rot=-0.0, y_rot=0.0, z_rot=-2.51, size=[0.1, 0.2, 0.1, 0.0], color="[0, 255, 0]")])
+Goal: Push the red block to the target pose.
+
+
+#define assistant
+```python
+def gen_plan(state: PushState, push_offsets: list):
+    
+    import numpy as np
+
+    # Build the block towards the target
+    actions = []
+    red_box = state.getFrame("big_red_block")
+    target = state.getFrame("target_pose")
+    dir = np.array([target.x_pos, target.y_pos]) - np.array([red_box.x_pos, red_box.y_pos])
+    dir_mag = np.linalg.norm(dir)
+    if dir_mag != 0;
+        dir_normed = dir / dir_mag
+    else:
+        dir_normed = np.zeros(2)
+
+    # First push start
+    offset_mag = max(red_box.size[:2]) * 3
+    a_start_x = red_box.x_pos - dir_normed[0]*offset_mag + push_offsets[0][0]
+    a_start_y = red_box.y_pos - dir_normed[1]*offset_mag + push_offsets[0][1]
+    
+    # First push end
+    a_end_x = target.x_pos + push_offsets[0][2]
+    a_end_y = target.x_pos + push_offsets[0][3]
+    
+    # Second push start
+    b_start_x = target.x_pos - dir_normed[0]*.2 + push_offsets[1][0]
+    b_start_y = target.y_pos - dir_normed[1]*.2 + push_offsets[1][1]
+    
+    # Second push end
+    b_end_x = target.x_pos + push_offsets[1][2]
+    b_end_y = target.x_pos + push_offsets[1][3]
+
+    # First Push #
+    actions.append(Action("push_motion", [a_start_x, a_start_y, a_end_x, a_end_y]))
+
+    # Second Push (For adjusting position) #
+    actions.append(Action("push_motion", [b_start_x, b_start_y, b_end_x, b_end_y]))
+
+    return actions
+
+def gen_initial_guess(initial: PushState):
+    return {
+        "push_offsets": [[.0, .0, .0, .0]] * 2, # BBO initial value
+    }
+```

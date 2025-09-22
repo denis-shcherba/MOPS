@@ -1,0 +1,38 @@
+```python
+def gen_plan(state: PushState, circle_center: list, circle_radius: float, push_offsets: list):
+    
+    import numpy as np
+
+    # Build the circle with the blocks
+    actions = []
+    num_blocks = len(state.frames) - 1  # Assuming the first frame is not a block
+    angle_step = 2 * np.pi / num_blocks
+
+    for i, block in enumerate(state.frames):
+        if "block" in block.name:
+            # Calculate target position on the circle
+            angle = i * angle_step
+            target_x = circle_center[0] + circle_radius * np.cos(angle)
+            target_y = circle_center[1] + circle_radius * np.sin(angle)
+
+            # Calculate push start and end points
+            start_x = block.x_pos + push_offsets[i][0]
+            start_y = block.y_pos + push_offsets[i][1]
+            end_x = target_x + push_offsets[i][2]
+            end_y = target_y + push_offsets[i][3]
+
+            # Add push action
+            actions.append(Action("push_motion", [start_x, start_y, end_x, end_y]))
+
+    return actions
+
+def gen_initial_guess(initial: PushState):
+    num_blocks = len(initial.frames) - 1  # Assuming the first frame is not a block
+    return {
+        "circle_center": [0.0, 0.0],  # BBO initial value for the center of the circle
+        "circle_radius": 0.2,  # BBO initial value for the radius of the circle
+        "push_offsets": [[0.0, 0.0, 0.0, 0.0] for _ in range(num_blocks)],  # BBO initial values for push offsets
+    }
+```
+
+This plan and initial guess setup assumes that the blocks are named with "block" in their names and that the first frame in the list is not a block. Adjustments may be needed based on the actual frame setup and naming conventions.

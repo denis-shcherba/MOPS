@@ -1,0 +1,28 @@
+```python
+def gen_plan(state: DrawState, pos: list, size: float, offsets: list):
+    x, y = pos
+
+    # Define the positions for the hash symbol (#) based on the size
+    lines = [
+        # Vertical lines
+        (x, y - size, x, y + size),  # Left vertical line
+        (x + size, y - size, x + size, y + size),  # Right vertical line
+        # Horizontal lines
+        (x - size, y, x + size, y),  # Top horizontal line
+        (x - size, y + size, x + size, y + size)  # Bottom horizontal line
+    ]
+
+    # Add offsets to each line's endpoints
+    actions = []
+    for (x0, y0, x1, y1), (dx, dy) in zip(lines, offsets):
+        actions.append(Action("draw_line", [x0 + dx, y0 + dy, x1 + dx, y1 + dy]))
+
+    return actions
+
+def gen_initial_guess(initial: DrawState):
+    return {
+        "pos": [0.32, 0.24],  # Center of the drawing board (cm)
+        "size": 0.1,          # Size of the hash symbol (cm)
+        "point_offsets": [[0., 0.]] * 4  # 2D point offsets for the hash symbol (4 lines)
+    }
+```

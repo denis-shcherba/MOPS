@@ -1,0 +1,10 @@
+WHITEBOARD_BOUNDS = [[0, 0.64], [0, 0.48]]  # relative X Y on Whiteboard (from lower left to upper right corner) 
+WHITEBOARD_CENTER = [0.32, 0.24]
+WHITEBOARD_GLOBAL_POSITION = [0.0, 0.25, 1] # x, y, z center position
+WHITEBOARD_EULER_ANGLES = [0.7, 0.0, 0.0] # x, y, z rotation in radians
+
+
+CAMERA_FOCAL_PARAMETERS = [322.2, 322.2, 320, 180] # fx, fy, cx, cy
+CAMERA_GLOBAL_POSITION = [0.0, 0.3, 1.5] # x, y, z position
+CAMERA_EULER_ANGLES = [-3.14, 0.0, 0.0] # x, y, z rotation in radians
+

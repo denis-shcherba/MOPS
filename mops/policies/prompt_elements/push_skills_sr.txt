@@ -1,0 +1,8 @@
+Action("pick", [frame_name], pick_axis)
+Grab the frame with name frame_name. Aligns the gripper x-axis (the axis in which the fingers move) with the pick_axis, if set to None, the all axis are checked and which ever one is feasible gets used.
+
+Action("place_sr", [x, y, z, rotated, yaw])
+Place grasped object at pose x, y, z, with a specific yaw angle. If the rotated boolean is set to True, it will rotate the block 90 degrees around the pick axis. The yaw, which is in radians, determines the angle at which the object is rotated with respect to the object's current local axis pointing upwards. If z is set to None, the object gets plazed on the table. If yaw is set to None, there are no restrictions to the yaw angle.
+
+Action("push_motion", [start_x, start_y, end_x, end_y])
+Perform a push motion along the straight 2D path defined by the start and end points.

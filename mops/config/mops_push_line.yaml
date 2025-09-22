@@ -1,0 +1,28 @@
+defaults:
+  - _self_
+#  - override hydra/job_logging: colorlog
+#  - override hydra/hydra_logging: colorlog
+
+name: deneck_push_line
+render: true
+vis_debug: false
+seed: 1
+use_komo: false
+max_env_steps: 50
+cma_sigma: 0.05
+env:
+  _target_: mops.environments.push.env.PushEnv
+  stability_check: False
+  gui: true
+task:
+  _target_: mops.environments.push.tasks.PushLine
+  goal_str: "Push the blocks so that they form a straight line."
+  task_name: mops_push_line
+policy:
+  _target_: mops.policies.mops.policy.MOPS
+  max_feedbacks: 2
+  max_evals: 1500
+  gaussian_blur: false
+  method: mops
+updater:
+  _target_: mops.environments.utils.DefaultUpdater

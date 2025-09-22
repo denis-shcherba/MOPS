@@ -1,0 +1,28 @@
+```python
+def gen_plan(state: PushState, push_offsets: list):
+    
+    import numpy as np
+
+    # Push the blocks to form a circle
+    actions = []
+    
+    blocks = [state.getFrame("block0"), state.getFrame("block1"), state.getFrame("block2"), state.getFrame("block3"), state.getFrame("block4"), state.getFrame("block5")]
+    
+    center = [0.0, 0.3]
+    radius = 0.2
+    angle = 2 * np.pi / len(blocks)
+    
+    for i, block in enumerate(blocks):
+        target_x = center[0] + radius * np.cos(i * angle) + push_offsets[i][0]
+        target_y = center[1] + radius * np.sin(i * angle) + push_offsets[i][1]
+        
+        actions.append(Action("pick", [block.name, None]))
+        actions.append(Action("place_sr", [target_x, target_y, None, None, None]))
+    
+    return actions
+
+def gen_initial_guess(initial: PushState):
+    return {
+        "push_offsets": [[.0, .0]] * 6, # BBO initial value
+    }
+```
