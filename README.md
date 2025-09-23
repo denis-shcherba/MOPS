@@ -20,7 +20,7 @@ echo "OPENAI_KEY='<YOUR-KEY-HERE>'" > .env
 ```
 
 ## Example commands
-The main run file is `eval_policy.py`. Running a particular domain involves simply creating a config file in the `vtamp/config` directory and running `eval_policy.py` using the `--config-dir .` and `--config_name` flags.
+The main run file is `eval_policy.py`. Running a particular domain involves simply creating a config file in the `mops/config` directory and running `eval_policy.py` using the `--config-dir .` and `--config_name` flags.
 
 Here are a few example commands to give you an idea:
 
